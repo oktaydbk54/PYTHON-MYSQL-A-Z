@@ -1,0 +1,497 @@
+import mysql.connector
+
+#Burada DataBase sistemine bağlanıp bağlanmadığımızı kontrol ettik.
+
+"""
+mydb = mysql.connector.connect(
+    host="127.0.0",
+    user = "root",
+    password = "codebod"
+)
+print(mydb)
+"""
+
+#Veritabanı oluşturmak;
+
+"MySQL'de bir veritabanı oluşturmak için 'CREATE DATABASE' ifadesini kullanırız."
+"""
+mydb = mysql.connector.connect(
+    host="127.0.0",
+    user = "root",
+    password = "codebod"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE DATABASE mydatabase")"""#burada ekrana hata çıkmadan sorunsuz bir şekilde ekrana dönüş olursa 
+#database'imizi kurmuşuz anlamına gelir.
+
+#şimdi gelin kontrol edelim
+
+"""mydb = mysql.connector.connect(
+    host="127.0.0",
+    user = "root",
+    password = "codebod"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("SHOW DATABASES")
+
+for i in mycursor:#burada veritabanındaki bulunun listeleri ekrana yazdırmış oluruz artık.
+    print(i)
+"""
+#şimdi birlikte erişmeyi deneyelim gelin.
+
+mydb = mysql.connector.connect(
+    host="127.0.0",
+    user = "root",
+    password = "codebod",
+    database ="mydatabase"
+)#eğer hiç bir değer dönüşü yoksa bağlantı gerçekleşmiştir ama hata verirse veritabanı yoktur anlamına gelebilir.
+
+#TABLO OLUŞTURMAK
+
+"MySQL'de bir tablo oluşturmak için CREATE TABLE   ifadesini kullanırız."
+"Bağlantıyı oluştururken veritabanının adını tanımladığımızdan emin olmamız gerekir."
+
+mydb = mysql.connector.connect(
+    host="127.0.0",
+    user = "root",
+    passwaord="codebod",
+    database="mydatabase"
+)
+
+mycursor = mydb.cursor()
+mycursor.execute("CREATE TABLE customers(name VARCHAR(255),address VARCHAR(255))")
+
+#OLUŞTURDUĞUMUZ CREATE TABLE KONTROL EDELİM ŞİMDİ
+
+"veritabanınızdaki tüm tabloları 'SHOW TABLES' ifadesiyle listeleyerek gösterimini sağlarız."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+mycursor.execute("SHOW TABLES")
+
+for i in mycursor:
+    print(i)#burada ekrana içersinde bulunan tablesları gösterimini yapar yani customersı bize döndürür.
+
+
+#Birincil Anahat
+
+"Bir tablo oluştururken, her kayıt için benzersiz bir anahtara sahip bir sütunda oluşturmalıyız."
+"Bu, BİRİNCİL ANAHTAR tanımlayarak yapabiliriz."
+"Her kayıt için benzersiz bir numara ekleyecek olan 'INT AUTO_INCREMENT PRIMARY KEY' ifadesini kullanırız.1'den başlar ve her kayıt için bir artar."
+#örneğin tabloyu oluştururken birincil anahtar oluşturalım.
+
+mydb = mysql.connector.connect(
+    host="127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+mycursor.execute("CREATE TABLE customers (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),address VARCHAR(255))")
+
+#EĞER OLUŞTURDUĞUMUZ TABLO MEVCUT İSE YANİ DAHA ÖNCEDEN OLUŞTURULMUŞ İSE BUNUN YERİNE ALTER TABLE İFADADESİNİ KULLANIRIZ.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password="codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+mycursor.execute("ALTER TABLE customers ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY")
+
+#TABLOYA EKLEME KISMI
+
+"MySQL'de bir tablo doldurmak için 'INSERT INTO' ifadesini kullanırız."
+
+#Müşteriler tablosuna bir kayıt ekleyelim şimdi
+
+mydb=mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "INSERT INTO customers (name,address) VALUES(%s,%s)"
+val = ("Boran","Maltepe 34")
+mycursor.execute(sql,val)
+
+mydb.commit()
+print(mycursor.rowcount,"record inserted.")
+
+#NOT!! UYARI BİLDİRİMİ; mydb.commit() değişikliklerin yapılması zorunludur, aksi takdirde tabloda herhangi bir değişiklik yapılmaz
+
+#Birden Çok Satır Ekleme
+
+"bir tabloya birden çok satır eklemek için executemany() yöntemi kullanın."
+"executemany() yönteminin ikinci parametresi, ekelemek istediğiniz verileri içeren bir tuple listedir."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "INSER INTO customers (name,address) VALUES (%s,%s)"
+
+val = [
+  ('Peter', 'Lowstreet 4'),
+  ('Amy', 'Apple st 652'),
+  ('Hannah', 'Mountain 21'),
+  ('Michael', 'Valley 345'),
+  ('Sandy', 'Ocean blvd 2'),
+  ('Betty', 'Green Grass 1'),
+  ('Richard', 'Sky st 331'),
+  ('Susan', 'One way 98'),
+  ('Vicky', 'Yellow Garden 2'),
+  ('Ben', 'Park Lane 38'),
+  ('William', 'Central st 954'),
+  ('Chuck', 'Main Road 989'),
+  ('Viola', 'Sideway 1633')
+]
+
+mycursor.executemany(sql,val)
+mydb.commit()
+print(mycursor.rowcount,"was inserted.")
+
+#eklenen bilgiye ulaşma
+#NOT!! EĞER BİRDEN FAZLA SATIR EKLEMESİ YAPARSAK,SON EKLENEN SATIRIN KİMLİĞİ DÖNDÜRÜLÜR.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "INSERT INTO customers (name,address) VALUES (%s,%s)"
+val = ("Michelle","Blue Village")
+mycursor.executed(sql,val)
+mydb.commit()
+
+print("1 record inserted, ID:",mycursor.lastrowid)
+
+
+#TABLODAN SEÇME
+
+"MySQL'de bir tablodan seçim yapmak için 'SELECT' ifadesini kullanırız."
+
+#örneğin müşteriler tablosundan tüm kayıtları seçelim ve sonuça bakalım.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor() 
+mycursor.execute("SELECT * FROM customers")
+myresult = mycursor.fetchall()#fetchall() bu ifade tüm satırları getiren yöntemdir.
+for i in myresult:
+    print(i)
+
+#Sütunları seçme
+
+"Bir tablodaki sütunlardan yalnızca bazılarını seçmek için, 'SELECT' ifadesini ve ardından sütun adlarını kullanırız."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+mycursor.execute("SELECT name,address FROM customers")
+myresult = mycursor.fetchall()
+
+for i in myresult:
+    print(i)
+#Burada ki örnekte tüm bilgileri sütunları bize döndürmüş olur
+
+#Fetchone() Yöntemini kullanma
+
+"Sadece bir satırla ilgileniyorsak , fetchone() fonksiyonunu kullanabiliriz."
+"fetchone() Yöntem sonucunun ilk satırını döndürür."
+
+#yalnızca bir satırı yazdırıcak bir örnek yapalım
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+mycursor.execute("SELECT name,address FROM customers")
+myresult = mycursor.fetchone()
+
+print(myresult)#buda bize ilk başta ki değerimizi getirmemizi sağlar.
+
+#FİLTRELİ SEÇİM YAPMAK
+
+"Bir tablodan kayıt seçerken, 'WHERE' ifadesini kullanarak seçim filtreleyebiliriz."
+
+#adresin Park Lane 38 olduğu kayıtları bulalım.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "SELECT * FROM customers WHERE address = 'Park Lane 38'"
+mycursor.execute(sql)
+myresult = mycursor.fetchall()
+for i in myresult:
+    print(i)#11.sırada ki bize uyuşan bilgiyi döndürmüş oluruz.
+
+
+#Joker Karakterler
+
+"Belirli bir harf veya tümcecikle başlayan, içeren veya biten kayıtlarda seçebilirz."
+"% joker karakterleri temsil etmek için kullanırız."
+#adresin 'yol' kelimesi geçen kayıtları arayalım.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql ="SELECT * FROM customers WHERE address LİKE '%way%' "
+mycursor.execute(sql)
+
+myresult = mycursor.fetchall()
+for i in myresult:
+    print(i) #Burada ekrana way kelimesi geçen bilgileri ekrana döndürür.
+
+#SQL Enjeksiyon durumunu önleme
+
+"Sorgu değerleri kullanıcı tarafından sağlandığında, değerlerden çıkış yapmalısınız."
+"Bu, veritabanınızı yok etmek veya kötüye kullanmak için yaygın bir web hackleme tekniği olan SQL enjeksiyonlarını önlemek içindir."
+"Mysql.connector modülünün sorgu değerlerinden kaçış yöntemleri vardır."
+
+#örneğin placholder %s yöntemini kullanarak sorgu değerlerinden çıkış yapalım.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+sql = "SELECT * FROM customers WHERE address = %s"
+adr = ("Yellow Garden 2",)
+mycursor.execute(sql,adr)
+
+myresult = mycursor.fetchall()
+for i in myresult:
+    print(i)
+
+#SONUCU SIRALAMA
+
+"Sonucu artan veya azalan düzende sıralamak için ORDER BY ifadesini kullanırız."
+"ORDER BY  anahtar sözcüğü, sonucu varsayılan olarak aryan şekilde sıralar. sonucu azalan düzende sıralamak için DESC anahtar kelimesini kullanırız.",
+#Sonucu isme göre alfabetik sıralama örneği yapalım.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+mycursor = mydb.cursor()
+sql = "SELECT * FROM customers ORDER BY name"
+mycursor.execute(sql)
+
+myresult = mycursor.fetchall()
+for i in myresult:
+    print(i)
+
+#DECS TARAFINDAN SİPARİŞ
+
+"Sonucu azalan düzende sıralamak için DESC anahtar sözcüğünü kullanırız."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "SELECT * FROM customers ORDER BY name DECS"
+mycursor.execute(sql)
+myresult = mycursor.fetchall()
+for i in myresult:
+    print(i)
+#Burada sonucu alfabetik olarak ters sıralamasını yaptık.
+
+#KAYIT SİLME İŞLEMİ
+
+"DELETE FROM deyimini kullanarak mevcut tablodaki kayıtları silebiliriz."
+#örneğin mountain 21 örneğini silmek isteyelim.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "DELETE FROM customers WHERE address = 'Mountain 21' "
+
+mycursor.execute(sql)
+mydb.commit()
+print(mycursor.rowcount,"record(s) deleted")
+
+#mydb.commit() değişikliklerin yapılacağı zaman kullanılması zorunludur yoksa aksi takdirde değişiklik yapılamaz.
+
+#DELETE sözdiziminde ki WHERE yan kelimesine dikkat edin WHERE yan kelimesi hangi kayıtların silinmesini belirtir aksi halde tüm kayıtlar silinir belirtilmezse
+
+#SQL Enjeksiyonunu Önleme 2
+
+"Herhangi bir sorgunun değerlerinden, ayrıca delete ifadelerinde de çıkılması iyi bir uygulama yolu olarak kullanılır."
+"Bu veritabanımızı korumak için yapılır."
+"Mysql.connector modülü %s, delete ifadesinde ki değerlerden kaçış yapmak için yer tutucuyu kullanır."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "DELETE FROM customers WHERE address = %s"
+adr = ("Yellow Garden 2 ",)
+mycursor.execute(sql,adr)
+
+mydb.commit()
+print(mycursor.rowcount,"record(s) deleted")
+
+#TABLO SİLME 
+
+"DROP TABLE  ifadesini kullanarak mevcut bir tabloyu silebiliriz."
+#müşteriler tablosunu silelim mesela.
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "DROP TABLE customers"
+mycursor.execute(sql)
+
+#YALNIZCA VARSA BIRAKMA
+
+"silmek istediğiniz tablo zaten silinmişse veya başka herhangi bir nedenle mevcut değilse,hata almamak için IF EXITS anahtar sözcüğünü kullanabiliri"
+#şimdi ki örnekte varsa müşteriler tablosunu silelim örneğini yapalaım
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+sql = "DROP TABLE IF EXISTS customers"
+mycursor.execute(sql)
+
+#TABLOLARI GÜNCELLEMEK
+
+"Bir tablodaki mevcut kayıtları UPDATE  deyimini kullanarak güncelleyebilirsiniz."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+sql = "UPDATE  customers  SET address  = 'Canyon 123' WHERE address = 'Valley 345' "
+mycursor.execute(sql)
+
+mydb.commit()
+print(mycursor.rowcount,"record(s) affected")
+ 
+#SQL Enjeksiyonunu Önleme
+
+"Güncelleme ifadelerinde de dahil olmak üzere herhangi bir sorgunun değerlerinden kaçmak iyi bir uygulamak olarak kabul edilir"
+"herhangi bir tehtit yerine önlem içindir."
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+sql = "UPDATE customers SET address = %s WHERE address = %s"
+val = ("Valley 345,","Canyon 123")
+
+mycursor.execute(sql,val)
+mydb.commit()
+print(mycursor.rowcount,"record(s) affected")
+
+
+#Aranılan sonucu sınırlama
+
+"sorgudan döndürülen kayıtların sayısını  LİMİT  ifadesini kullanarak sınırlayabiliriz"
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+
+mycursor.execute("SELECT * FROM customers LIMIT 5 ")
+
+myresult = mycursor.fetchall()
+
+for i in myresult:
+    print(i)
+
+#Başka bir konumdan başlamak
+
+"eğer sonuçlarımızı ekrana en baştan değilde istediğimiz satırdan başlamasını istersek OFFSET  kelimesini kullanırız"
+
+mydb = mysql.connector.connect(
+    host = "127.0.0",
+    user = "root",
+    password = "codebod",
+    database = "mydatabase")
+
+mycursor = mydb.cursor()
+mycursor.execute("SELECT * FROM customers LIMIT 5 OFFSET 2 ")
+
+myresult = mycursor.fetchall()
+for i in myresult:
+    print(i)
+
